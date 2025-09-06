@@ -1,2 +1,898 @@
-# Kuis-Who-Wants-to-Be-a-Millionaire-Indonesia
-Game kuis ini memiliki fitur-fitur berikut:  15 Pertanyaan Berjenjang - Pertanyaan dimulai dari yang mudah hingga sulit  Papan Hadiah - Menampilkan daftar hadiah dari Rp 100.000 hingga Rp 1.000.000.000  Lifeline:  50:50 - Menghilangkan dua jawaban yang salah  Telepon Teman - Simulasi konsultasi dengan teman  Tanya Penonton - Simulasi polling 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Wants to Be a Millionaire? Indonesia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c2461, #1e3799);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ffcc00;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .question-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .question {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .option {
+            background: #1e3799;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .option:hover {
+            background: #4a69bd;
+            transform: scale(1.02);
+        }
+        
+        .option.correct {
+            background: #2ed573;
+        }
+        
+        .option.wrong {
+            background: #ff4757;
+        }
+        
+        .option.hidden {
+            display: none;
+        }
+        
+        .option-label {
+            background: #ffcc00;
+            color: #0c2461;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .lifelines {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .lifeline {
+            background: #ff9f43;
+            color: #0c2461;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .lifeline:hover {
+            background: #ffcc00;
+        }
+        
+        .lifeline:disabled {
+            background: #57606f;
+            cursor: not-allowed;
+        }
+        
+        .prize-board {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 5px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 5px;
+        }
+        
+        .prize-item {
+            padding: 8px 15px;
+            text-align: right;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .prize-item.current {
+            background: #ffcc00;
+            color: #0c2461;
+            font-weight: bold;
+        }
+        
+        .prize-item.guaranteed {
+            color: #ffcc00;
+            font-weight: bold;
+            border-left: 3px solid #ffcc00;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-start {
+            background: #ffcc00;
+            color: #0c2461;
+        }
+        
+        .btn-next {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .btn-walk {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #0c2461, #1e3799);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-title {
+            color: #ffcc00;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .modal-message {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+        
+        .question-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #ffcc00;
+            color: #0c2461;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #ffcc00;
+            opacity: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        .music-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .music-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .music-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .prize-board {
+                position: relative;
+                top: unset;
+                right: unset;
+                transform: unset;
+                flex-direction: row;
+                overflow-x: auto;
+                margin-top: 20px;
+                padding: 10px;
+            }
+            
+            .prize-item {
+                writing-mode: vertical-lr;
+                transform: rotate(180deg);
+                text-align: center;
+                min-width: 50px;
+                padding: 10px 5px;
+            }
+            
+            .question-number {
+                position: relative;
+                top: unset;
+                left: unset;
+                margin-bottom: 15px;
+                display: inline-block;
+            }
+            
+            .music-controls {
+                position: relative;
+                top: unset;
+                right: unset;
+                justify-content: center;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">💰</div>
+            <h1>Who Wants to Be a Millionaire?</h1>
+            <p>Jawab 15 pertanyaan dengan benar untuk memenangkan Rp 1.000.000.000!</p>
+        </header>
+        
+        <div class="music-controls">
+            <button class="music-btn" id="playMusic">▶️</button>
+            <button class="music-btn" id="pauseMusic">⏸️</button>
+            <button class="music-btn" id="muteMusic">🔊</button>
+        </div>
+        
+        <div class="question-number">Pertanyaan: <span id="currentQuestionNumber">0</span>/15</div>
+        
+        <div class="game-area">
+            <div class="question-section">
+                <div class="question">Selamat datang di Who Wants to Be a Millionaire! Indonesia. Klik 'Mulai' untuk memulai permainan.</div>
+            </div>
+            
+            <div class="options">
+                <div class="option"><span class="option-label">A</span> <span class="option-text">Pilihan A</span></div>
+                <div class="option"><span class="option-label">B</span> <span class="option-text">Pilihan B</span></div>
+                <div class="option"><span class="option-label">C</span> <span class="option-text">Pilihan C</span></div>
+                <div class="option"><span class="option-label">D</span> <span class="option-text">Pilihan D</span></div>
+            </div>
+            
+            <div class="lifelines">
+                <button class="lifeline" id="fiftyFifty">50:50</button>
+                <button class="lifeline" id="phoneFriend">Telepon Teman</button>
+                <button class="lifeline" id="askAudience">Tanya Penonton</button>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-start" id="startBtn">Mulai</button>
+                <button class="btn btn-next" id="nextBtn" disabled>Pertanyaan Berikutnya</button>
+                <button class="btn btn-walk" id="walkBtn">Mundur</button>
+            </div>
+        </div>
+        
+        <div class="prize-board">
+            <div class="prize-item">Rp 1.000.000.000</div>
+            <div class="prize-item">Rp 500.000.000</div>
+            <div class="prize-item">Rp 250.000.000</div>
+            <div class="prize-item">Rp 125.000.000</div>
+            <div class="prize-item">Rp 64.000.000</div>
+            <div class="prize-item guaranteed">Rp 32.000.000</div>
+            <div class="prize-item">Rp 16.000.000</div>
+            <div class="prize-item">Rp 8.000.000</div>
+            <div class="prize-item">Rp 4.000.000</div>
+            <div class="prize-item">Rp 2.000.000</div>
+            <div class="prize-item guaranteed">Rp 1.000.000</div>
+            <div class="prize-item">Rp 500.000</div>
+            <div class="prize-item">Rp 300.000</div>
+            <div class="prize-item">Rp 200.000</div>
+            <div class="prize-item">Rp 100.000</div>
+        </div>
+    </div>
+    
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">Selamat!</h2>
+            <p class="modal-message" id="modalMessage">Anda telah memenangkan Rp 0</p>
+            <button class="btn btn-start" id="modalBtn">Main Lagi</button>
+        </div>
+    </div>
+
+    <!-- Elemen Audio -->
+    <audio id="backgroundMusic" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2021/10/25/audio_172d7dec90.mp3?filename=epic-cinematic-trailer-11120.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="correctSound">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/19/audio_5c4dc48e0c.mp3?filename=success-fanfare-trumpets-6185.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="wrongSound">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5c1a64dbe2.mp3?filename=wrong-answer-126515.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="lifelineSound">
+        <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_7b6072460f.mp3?filename=magic-chime-83506.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="winSound">
+        <source src="https://cdn.pixabay.com/download/audio/2021/10/31/audio_3b43d2fa0d.mp3?filename=win-sound-6705.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemen DOM
+            const startBtn = document.getElementById('startBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const walkBtn = document.getElementById('walkBtn');
+            const questionEl = document.querySelector('.question');
+            const optionsEl = document.querySelectorAll('.option');
+            const optionTexts = document.querySelectorAll('.option-text');
+            const lifelines = document.querySelectorAll('.lifeline');
+            const prizeItems = document.querySelectorAll('.prize-item');
+            const resultModal = document.getElementById('resultModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalBtn = document.getElementById('modalBtn');
+            const currentQuestionNumber = document.getElementById('currentQuestionNumber');
+            
+            // Elemen Audio
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const correctSound = document.getElementById('correctSound');
+            const wrongSound = document.getElementById('wrongSound');
+            const lifelineSound = document.getElementById('lifelineSound');
+            const winSound = document.getElementById('winSound');
+            
+            // Kontrol Musik
+            const playMusicBtn = document.getElementById('playMusic');
+            const pauseMusicBtn = document.getElementById('pauseMusic');
+            const muteMusicBtn = document.getElementById('muteMusic');
+            
+            // Data pertanyaan (15 pertanyaan sesuai dengan 15 tingkat hadiah)
+            const questions = [
+                {
+                    question: "Apa ibu kota Indonesia?",
+                    options: ["Jakarta", "Bandung", "Surabaya", "Medan"],
+                    answer: 0
+                },
+                {
+                    question: "Siapa presiden pertama Indonesia?",
+                    options: ["Soekarno", "Soeharto", "Joko Widodo", "BJ Habibie"],
+                    answer: 0
+                },
+                {
+                    question: "Binatang apa yang menjadi simbol persatuan Indonesia?",
+                    options: ["Harimau", "Komodo", "Elang", "Garuda"],
+                    answer: 3
+                },
+                {
+                    question: "Bulan apa Indonesia merdeka?",
+                    options: ["Januari", "Agustus", "Juni", "Desember"],
+                    answer: 1
+                },
+                {
+                    question: "Apa nama pulau terbesar di Indonesia?",
+                    options: ["Jawa", "Sumatera", "Kalimantan", "Papua"],
+                    answer: 2
+                },
+                {
+                    question: "Apa nama mata uang Indonesia?",
+                    options: ["Ringgit", "Rupiah", "Dollar", "Peso"],
+                    answer: 1
+                },
+                {
+                    question: "Siapa pencipta lagu Indonesia Raya?",
+                    options: ["Ismail Marzuki", "W.R. Supratman", "Gesang", "Iwan Fals"],
+                    answer: 1
+                },
+                {
+                    question: "Apa nama bandara internasional di Bali?",
+                    options: ["Soekarno-Hatta", "Juanda", "Ngurah Rai", "Husein Sastranegara"],
+                    answer: 2
+                },
+                {
+                    question: "Berapa jumlah provinsi di Indonesia saat ini?",
+                    options: ["34", "33", "32", "31"],
+                    answer: 0
+                },
+                {
+                    question: "Apa nama candi Buddha terbesar di dunia yang berada di Indonesia?",
+                    options: ["Candi Prambanan", "Candi Borobudur", "Candi Mendut", "Candi Pawon"],
+                    answer: 1
+                },
+                {
+                    question: "Siapa yang menjahit bendera Merah Putih untuk proklamasi kemerdekaan Indonesia?",
+                    options: ["Cut Nyak Dien", "Martha Christina Tiahahu", "Fatmawati", "R.A. Kartini"],
+                    answer: 2
+                },
+                {
+                    question: "Apa nama selat yang memisahkan Sumatra dan Malaysia?",
+                    options: ["Selat Sunda", "Selat Malaka", "Selat Lombok", "Selat Makassar"],
+                    answer: 1
+                },
+                {
+                    question: "Apa nama danau terbesar di Indonesia?",
+                    options: ["Danau Toba", "Danau Singkarak", "Danau Poso", "Danau Sentani"],
+                    answer: 0
+                },
+                {
+                    question: "Siapa pahlawan nasional yang dikenal sebagai 'Bapak Pendidikan Nasional'?",
+                    options: ["Ki Hajar Dewantara", "Dewi Sartika", "R.A. Kartini", "K.H. Ahmad Dahlan"],
+                    answer: 0
+                },
+                {
+                    question: "Apa nama gunung tertinggi di Indonesia?",
+                    options: ["Gunung Kerinci", "Gunung Rinjani", "Gunung Semeru", "Gunung Jaya Wijaya"],
+                    answer: 3
+                }
+            ];
+            
+            // Daftar hadiah sesuai dengan 15 tingkat
+            const prizes = [
+                100000, 200000, 300000, 500000, 1000000,
+                2000000, 4000000, 8000000, 16000000, 32000000,
+                64000000, 125000000, 250000000, 500000000, 1000000000
+            ];
+            
+            // Variabel permainan
+            let currentQuestion = 0;
+            let score = 0;
+            let gameActive = false;
+            let usedFiftyFifty = false;
+            let usedPhoneFriend = false;
+            let usedAskAudience = false;
+            let musicMuted = false;
+            
+            // Fungsi untuk memulai permainan
+            function startGame() {
+                currentQuestion = 0;
+                score = 0;
+                gameActive = true;
+                usedFiftyFifty = false;
+                usedPhoneFriend = false;
+                usedAskAudience = false;
+                
+                startBtn.disabled = true;
+                nextBtn.disabled = false;
+                walkBtn.disabled = false;
+                
+                lifelines.forEach(lifeline => {
+                    lifeline.disabled = false;
+                });
+                
+                // Memulai musik latar
+                if (!musicMuted) {
+                    backgroundMusic.play();
+                }
+                
+                updatePrizeBoard();
+                showQuestion();
+            }
+            
+            // Menampilkan pertanyaan
+            function showQuestion() {
+                if (currentQuestion >= questions.length) {
+                    endGame();
+                    return;
+                }
+                
+                const question = questions[currentQuestion];
+                questionEl.textContent = question.question;
+                currentQuestionNumber.textContent = currentQuestion + 1;
+                
+                optionTexts.forEach((optionText, index) => {
+                    optionText.textContent = question.options[index];
+                });
+                
+                optionsEl.forEach(option => {
+                    option.classList.remove('correct', 'wrong', 'hidden');
+                    option.style.pointerEvents = 'auto';
+                });
+                
+                nextBtn.disabled = true;
+                updatePrizeBoard();
+            }
+            
+            // Memeriksa jawaban
+            function checkAnswer(selectedOption) {
+                if (!gameActive) return;
+                
+                const selectedIndex = Array.from(optionsEl).indexOf(selectedOption);
+                const correctIndex = questions[currentQuestion].answer;
+                
+                optionsEl.forEach(option => {
+                    option.style.pointerEvents = 'none';
+                });
+                
+                if (selectedIndex === correctIndex) {
+                    selectedOption.classList.add('correct');
+                    score = currentQuestion + 1;
+                    nextBtn.disabled = false;
+                    
+                    // Memainkan suara jawaban benar
+                    correctSound.currentTime = 0;
+                    correctSound.play();
+                    
+                    // Jika ini adalah pertanyaan terakhir, langsung ke modal kemenangan
+                    if (currentQuestion === questions.length - 1) {
+                        setTimeout(() => {
+                            endGame();
+                        }, 1500);
+                    }
+                } else {
+                    selectedOption.classList.add('wrong');
+                    optionsEl[correctIndex].classList.add('correct');
+                    
+                    // Memainkan suara jawaban salah
+                    wrongSound.currentTime = 0;
+                    wrongSound.play();
+                    
+                    setTimeout(() => {
+                        endGame();
+                    }, 1500);
+                }
+            }
+            
+            // Beralih ke pertanyaan berikutnya
+            function nextQuestion() {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    endGame();
+                }
+            }
+            
+            // Mengakhiri permainan
+            function endGame() {
+                gameActive = false;
+                const prize = calculatePrize();
+                
+                // Menghentikan musik latar
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+                
+                if (score === questions.length) {
+                    modalTitle.textContent = "Selamat! Anda Menang!";
+                    modalMessage.textContent = `Anda telah memenangkan ${formatRupiah(prize)}`;
+                    
+                    // Memainkan suara kemenangan
+                    winSound.play();
+                    createConfetti();
+                } else {
+                    modalTitle.textContent = "Permainan Berakhir";
+                    modalMessage.textContent = `Anda telah memenangkan ${formatRupiah(prize)}`;
+                }
+                
+                resultModal.classList.add('active');
+            }
+            
+            // Menghitung hadiah
+            function calculatePrize() {
+                // Jika semua pertanyaan dijawab dengan benar, berikan hadiah tertinggi
+                if (score === questions.length) {
+                    return prizes[prizes.length - 1]; // Rp 1.000.000.000
+                }
+                
+                // Hadiah terjamin pada level tertentu
+                if (score >= 10) return prizes[9]; // Rp 32.000.000
+                if (score >= 5) return prizes[4];  // Rp 1.000.000
+                
+                return score > 0 ? prizes[score - 1] : 0;
+            }
+            
+            // Memformat mata uang Rupiah
+            function formatRupiah(amount) {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(amount);
+            }
+            
+            // Memperbarui papan hadiah
+            function updatePrizeBoard() {
+                prizeItems.forEach((item, index) => {
+                    item.classList.remove('current');
+                    
+                    if (index === questions.length - currentQuestion - 1) {
+                        item.classList.add('current');
+                    }
+                });
+            }
+            
+            // Menggunakan lifeline 50:50
+            function useFiftyFifty() {
+                if (usedFiftyFifty || !gameActive) return;
+                
+                const correctIndex = questions[currentQuestion].answer;
+                let incorrectOptions = [];
+                
+                // Kumpulkan indeks opsi yang salah
+                for (let i = 0; i < 4; i++) {
+                    if (i !== correctIndex) {
+                        incorrectOptions.push(i);
+                    }
+                }
+                
+                // Acak opsi yang salah untuk dihapus
+                incorrectOptions.sort(() => Math.random() - 0.5);
+                
+                // Sembunyikan dua opsi salah
+                optionsEl[incorrectOptions[0]].classList.add('hidden');
+                optionsEl[incorrectOptions[1]].classList.add('hidden');
+                
+                // Memainkan suara lifeline
+                lifelineSound.currentTime = 0;
+                lifelineSound.play();
+                
+                usedFiftyFifty = true;
+                document.getElementById('fiftyFifty').disabled = true;
+            }
+            
+            // Menggunakan lifeline telepon teman
+            function usePhoneFriend() {
+                if (usedPhoneFriend || !gameActive) return;
+                
+                const correctIndex = questions[currentQuestion].answer;
+                // Teman akan memberikan jawaban yang benar dengan probabilitas 80%
+                const isCorrect = Math.random() < 0.8;
+                const answer = isCorrect ? correctIndex : (correctIndex + 1) % 4;
+                
+                // Memainkan suara lifeline
+                lifelineSound.currentTime = 0;
+                lifelineSound.play();
+                
+                alert(`Teman Anda mengatakan jawabannya adalah ${String.fromCharCode(65 + answer)}`);
+                
+                usedPhoneFriend = true;
+                document.getElementById('phoneFriend').disabled = true;
+            }
+            
+            // Menggunakan lifeline tanya penonton
+            function useAskAudience() {
+                if (usedAskAudience || !gameActive) return;
+                
+                const correctIndex = questions[currentQuestion].answer;
+                // Simulasi hasil polling penonton
+                let percentages = [0, 0, 0, 0];
+                
+                // Berikan persentase tertinggi ke jawaban benar
+                percentages[correctIndex] = Math.floor(Math.random() * 30) + 50; // 50-80%
+                
+                // Bagikan sisanya ke opsi lain
+                let remaining = 100 - percentages[correctIndex];
+                for (let i = 0; i < 4; i++) {
+                    if (i !== correctIndex) {
+                        let share = i === 3 ? remaining : Math.floor(Math.random() * remaining);
+                        percentages[i] = share;
+                        remaining -= share;
+                    }
+                }
+                
+                // Memainkan suara lifeline
+                lifelineSound.currentTime = 0;
+                lifelineSound.play();
+                
+                alert(`Hasil polling penonton:\nA: ${percentages[0]}%\nB: ${percentages[1]}%\nC: ${percentages[2]}%\nD: ${percentages[3]}%`);
+                
+                usedAskAudience = true;
+                document.getElementById('askAudience').disabled = true;
+            }
+            
+            // Membuat efek konfeti untuk kemenangan
+            function createConfetti() {
+                const colors = ['#ffcc00', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9c74f'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    document.body.appendChild(confetti);
+                    
+                    // Animasi konfeti
+                    const animation = confetti.animate([
+                        { 
+                            transform: 'translateY(-100vh) rotate(0deg)',
+                            opacity: 1
+                        },
+                        { 
+                            transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg)`,
+                            opacity: 0
+                        }
+                    ], {
+                        duration: 2000 + Math.random() * 3000,
+                        easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                    });
+                    
+                    animation.onfinish = () => {
+                        confetti.remove();
+                    };
+                }
+            }
+            
+            // Kontrol Musik
+            playMusicBtn.addEventListener('click', () => {
+                if (musicMuted) {
+                    backgroundMusic.muted = false;
+                    musicMuted = false;
+                    muteMusicBtn.textContent = "🔊";
+                }
+                backgroundMusic.play();
+            });
+            
+            pauseMusicBtn.addEventListener('click', () => {
+                backgroundMusic.pause();
+            });
+            
+            muteMusicBtn.addEventListener('click', () => {
+                musicMuted = !musicMuted;
+                backgroundMusic.muted = musicMuted;
+                muteMusicBtn.textContent = musicMuted ? "🔇" : "🔊";
+            });
+            
+            // Event listeners
+            startBtn.addEventListener('click', startGame);
+            
+            nextBtn.addEventListener('click', nextQuestion);
+            
+            walkBtn.addEventListener('click', endGame);
+            
+            optionsEl.forEach(option => {
+                option.addEventListener('click', () => {
+                    checkAnswer(option);
+                });
+            });
+            
+            document.getElementById('fiftyFifty').addEventListener('click', useFiftyFifty);
+            
+            document.getElementById('phoneFriend').addEventListener('click', usePhoneFriend);
+            
+            document.getElementById('askAudience').addEventListener('click', useAskAudience);
+            
+            modalBtn.addEventListener('click', () => {
+                resultModal.classList.remove('active');
+                startBtn.disabled = false;
+                nextBtn.disabled = true;
+                walkBtn.disabled = true;
+                
+                optionsEl.forEach(option => {
+                    option.classList.remove('hidden');
+                });
+                
+                questionEl.textContent = "Selamat datang di Who Wants to Be a Millionaire! Indonesia. Klik 'Mulai' untuk memulai permainan.";
+                currentQuestionNumber.textContent = "0";
+                optionTexts.forEach(optionText => {
+                    optionText.textContent = "Pilihan " + optionText.textContent.charAt(0);
+                });
+            });
+            
+            // Inisialisasi
+            updatePrizeBoard();
+        });
+    </script>
+</body>
+</html>
